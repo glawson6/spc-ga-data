@@ -3,11 +3,13 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%-5p %d [%t] %c: %m%n"/>
         </Console>
+        <!--
         <File name="File" fileName="../out/SPC-GA-DATA.log">
             <PatternLayout>
                 <PatternLayout pattern="%-5p %d [%t] %c: %m%n"/>
             </PatternLayout>
         </File>
+        -->
     </Appenders>
 
     <Loggers>
@@ -35,7 +37,6 @@
 
         <AsyncRoot level="INFO">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="File"/>
         </AsyncRoot>
     </Loggers>
 
