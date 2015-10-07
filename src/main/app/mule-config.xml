@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:json="http://www.mulesoft.org/schema/mule/json"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+      xmlns:jetty="http://www.mulesoft.org/schema/mule/jetty"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+		http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+		http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+		http://www.mulesoft.org/schema/mule/jetty http://www.mulesoft.org/schema/mule/jetty/current/mule-jetty.xsd">
+
+    <spring:beans>
+        <!--
+        <spring:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >
+            <spring:property name="locations">
+                <spring:list>
+                    <spring:value>classpath:domain.properties</spring:value>
+                </spring:list>
+            </spring:property>
+        </spring:bean>
+
+        <spring:import resource="classpath:activemq-embedded.xml"/>
+        -->
+        <spring:bean id="connectionFactoryInbound"
+                     class="org.apache.activemq.ActiveMQConnectionFactory">
+            <spring:property name="brokerURL" value="tcp://gregorylawson.net:58616"/>
+            <spring:property name="password" value="glawson6"/>
+            <spring:property name="userName" value="Integration6!"/>
+        </spring:bean>
+    </spring:beans>
+
+    <jms:activemq-connector name="zipCodesConnector"
+                            connectionFactory-ref="connectionFactoryInbound"
+                            specification="1.1"
+                            validateConnections="true"
+                            maxRedelivery="-1"
+                            durable="true"
+                            persistentDelivery="true"
+                            numberOfConsumers="5"/>
+
+    <jms:activemq-connector name="restaurantStagingConnector"
+                            connectionFactory-ref="connectionFactoryInbound"
+                            specification="1.1"
+                            validateConnections="true"
+                            durable="true"
+                            persistentDelivery="true"
+                            maxRedelivery="4"
+                            numberOfConsumers="20"/>
+
+    <jms:activemq-connector name="queryInspectionConnector"
+                            connectionFactory-ref="connectionFactoryInbound"
+                            specification="1.1"
+                            validateConnections="true"
+                            durable="true"
+                            persistentDelivery="true"
+                            maxRedelivery="4"
+                            numberOfConsumers="1"/>
+
+    <http:listener-config name="httpConfig" host="0.0.0.0" port="${http.port}" protocol="HTTP"
+                          doc:name="HTTP Listener Configuration">
+    </http:listener-config>
+
+    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="127.0.0.1"
+                         port="8081" name="httpRequestConfig">
+    </http:request-config>
+
+    <choice-exception-strategy name="queryInspectionExceptionStrategy">
+
+        <rollback-exception-strategy doc:name="Rollback Exception Strategy" maxRedeliveryAttempts="4"
+                                     when="exception.causedBy(com.google.api.client.http.HttpResponseException)">
+            <on-redelivery-attempts-exceeded>
+                <logger message="Sending to Error Queue" level="INFO" category="queryInspectionExceptionStrategy"/>
+                <jms:outbound-endpoint queue="queryInspectionErrorQueue" connector-ref="queryInspectionConnector"
+                                       exchange-pattern="one-way">
+                </jms:outbound-endpoint>
+            </on-redelivery-attempts-exceeded>
+        </rollback-exception-strategy>
+    </choice-exception-strategy>
+
+    <choice-exception-strategy name="restaurantUpdateExceptionStrategy">
+        <rollback-exception-strategy doc:name="Rollback Exception Strategy" maxRedeliveryAttempts="4"
+                                     when="exception.causedBy(com.google.api.client.http.HttpResponseException)">
+            <on-redelivery-attempts-exceeded>
+                <logger category="queryInspectionExceptionStrategy"
+                        message="~~~~~~~~~~~~~~~~~~~~~~~~~~~ Message #[message] in Exception #[exception]" level="INFO"
+                        doc:name="Logger"/>
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
+                <object-to-string-transformer/>
+                <jms:outbound-endpoint queue="restaurantStagingErrorQueue" connector-ref="zipCodesConnector"
+                                       exchange-pattern="one-way">
+                </jms:outbound-endpoint>
+            </on-redelivery-attempts-exceeded>
+        </rollback-exception-strategy>
+    </choice-exception-strategy>
+
+    <jetty:connector name="jettyConnector" configFile="jetty.xml"/>
+    <jetty:endpoint name="jettyEndpoint" address="http://localhost:${jetty.port}/" connector-ref="jettyConnector"/>
+
+    <flow name="main">
+        <vm:inbound-endpoint path="in"/>
+        <!-- TODO add your service component here. This can also be a Spring bean using <spring-object bean="name"/> -->
+        <append-string-transformer message=" Received"/>
+        <vm:outbound-endpoint path="out"/>
+    </flow>
+
+    <!-- com.google.api.client.http.HttpResponseException -->
+
+    <flow name="httpIndexFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="/*" allowedMethods="GET">
+        </http:listener>
+        <transformer ref="httpPathTransformer"/>
+        <http:request config-ref="httpRequestConfig" doc:name="Query user resource using token" parseResponse="false"
+                      method="GET" path="{myPath}">
+            <http:request-builder>
+                <http:uri-param paramName="myPath" value="#[flowVars['rPath']]"/>
+            </http:request-builder>
+        </http:request>
+    </flow>
+
+    <flow name="httpAPIRestaurantSearchFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="/api/restaurant/search" allowedMethods="POST">
+        </http:listener>
+        <json:json-to-object-transformer returnClass="com.taptech.spoonscore.domain.RestaurantSearch"
+                                         doc:name="JSON to HashMap"/>
+        <component doc:name="Java">
+            <method-entry-point-resolver>
+                <include-entry-point method="findRestaurants"/>
+            </method-entry-point-resolver>
+            <spring-object bean="restaurantService"/>
+        </component>
+        <logger category="httpAPIRestaurantSearchFlow" level="INFO" message="Payload #[payload]"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+
+    <flow name="httpAPIRestaurantInspectionUpdateFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="/api/restaurant/inspectionUpdate"
+                       allowedMethods="POST">
+        </http:listener>
+        <json:json-to-object-transformer returnClass="com.taptech.spoonscore.domain.Restaurant"
+                                         doc:name="JSON to HashMap"/>
+        <component doc:name="Java">
+            <method-entry-point-resolver>
+                <include-entry-point method="updateRestaurant"/>
+            </method-entry-point-resolver>
+            <spring-object bean="restaurantService"/>
+        </component>
+        <logger category="httpAPIRestaurantInspectionUpdateFlow" level="INFO" message="Payload #[payload]"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger category="httpAPIRestaurantInspectionUpdateFlow"
+                    message="~~~~~~~~~~~~~~~~~~~~~~~~~~~ Message #[message] in Exception #[exception]" level="INFO"
+                    doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+
+    <flow name="zipCodeUpdateFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="zipCodeUpdate/{zipCode}" allowedMethods="GET">
+        </http:listener>
+        <set-variable variableName="zipCode" value="#[message.inboundProperties.'http.uri.params'.zipCode]"
+                      doc:name="Variable"/>
+        <logger category="zipCodeUpdateFlow" level="INFO" message="Sending ZipCode #[flowVars['zipCode']]"/>
+        <set-payload value="#[flowVars['zipCode']]"/>
+        <jms:outbound-endpoint queue="zipCodeInputQueue" connector-ref="zipCodesConnector" exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+    </flow>
+
+    <flow name="zipCodeUpdateAllFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="zipCodeUpdateAll" allowedMethods="GET">
+        </http:listener>
+        <expression-component doc:name="Message to encryptor">
+            <![CDATA[payload =app.registry['inspectionDataService'].getValidZipCodes();]]>
+        </expression-component>
+        <collection-splitter/>
+        <object-to-string-transformer/>
+        <logger category="zipCodeUpdateAllFlow" level="INFO" message="ZipCodes: #[payload]"/>
+        <jms:outbound-endpoint queue="zipCodeInputQueue" connector-ref="zipCodesConnector" exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+    </flow>
+
+    <flow name="tesHttpStaticFlow">
+        <jetty:inbound-endpoint exchange-pattern="request-response" ref="jettyEndpoint" contentType="text/html"
+                                doc:name="Jetty"/>
+        <logger category="tesHttpStaticFlow" level="INFO" message="Did we make it?"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger category="httpAPIRestaurantInspectionUpdateFlow"
+                    message="~~~~~~~~~~~~~~~~~~~~~~~~~~~ Message #[message] in Exception #[exception]" level="INFO"
+                    doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+
+    <flow name="zipCodeInputQueueFlow">
+        <jms:inbound-endpoint queue="zipCodeInputQueue" connector-ref="zipCodesConnector" exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+        <transformer ref="zipCodeMetaDataTransformer"/>
+        <logger message="This is a jms flow  zipCodeInputQueueFlow #[payload]" level="INFO"/>
+        <collection-splitter/>
+        <jms:outbound-endpoint queue="queryInspectionQueue" connector-ref="queryInspectionConnector"
+                               exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+
+        <choice-exception-strategy>
+            <rollback-exception-strategy doc:name="Rollback Exception Strategy" maxRedeliveryAttempts="4">
+                <on-redelivery-attempts-exceeded>
+                    <logger category="zipCodeInputQueueFlow"
+                            message="~~~~~~~~~~~~~~~~~~~~~~~~~~~ Message #[message] in Exception #[exception]" level="INFO"
+                            doc:name="Logger"/>
+                    <jms:outbound-endpoint queue="errorQueue" connector-ref="zipCodesConnector" exchange-pattern="one-way">
+                    </jms:outbound-endpoint>
+                </on-redelivery-attempts-exceeded>
+            </rollback-exception-strategy>
+        </choice-exception-strategy>
+
+    </flow>
+    <!--
+    <flow name="queryInspectionQueueFlow" processingStrategy="synchronous">
+        <jms:inbound-endpoint queue="queryInspectionQueue" connector-ref="queryInspectionConnector"
+                              exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+        <transformer ref="extractRestaurantListTransformer"/>
+        <logger message="This is a jms flow  queryInspectionQueueFlow #[payload]" level="INFO"/>
+        <collection-splitter/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <object-to-string-transformer/>
+        <jms:outbound-endpoint queue="restaurantStagingQueue" connector-ref="restaurantStagingConnector"
+                               exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+        <exception-strategy ref="queryInspectionExceptionStrategy"/>
+    </flow>
+    -->
+
+    <flow name="queryInspectionQueueFlow">
+        <jms:inbound-endpoint queue="queryInspectionQueue" connector-ref="restaurantStagingConnector"
+                              exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+
+        <jms:outbound-endpoint queue="queryInspectionTempQueue" connector-ref="restaurantStagingConnector"
+                               exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+        <exception-strategy ref="queryInspectionExceptionStrategy"/>
+    </flow>
+
+
+    <flow name="restaurantStagingQueueFlow" processingStrategy="synchronous">
+        <jms:inbound-endpoint queue="restaurantStagingQueue" connector-ref="restaurantStagingConnector"
+                              exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <json:json-to-object-transformer returnClass="com.taptech.spoonscore.domain.Restaurant"
+                                         doc:name="JSON to HashMap"/>
+        <logger message="This is a jms flow  restaurantStagingQueueFlow #[payload]" level="INFO"/>
+        <transformer ref="persistRestaurantStageTransformer"/>
+
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <object-to-string-transformer/>
+        <jms:outbound-endpoint queue="combineRestaurantDataQueue" connector-ref="restaurantStagingConnector"
+                               exchange-pattern="one-way">
+        </jms:outbound-endpoint>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger category="queryInspectionExceptionStrategy"
+                    message="~~~~~~~~~~~~~~~~~~~~~~~~~~~ Message #[message] in Exception #[exception]" level="INFO"
+                    doc:name="Logger"/>
+            <json:object-to-json-transformer doc:name="Object to JSON"/>
+            <object-to-string-transformer/>
+            <jms:outbound-endpoint queue="restaurantStagingErrorQueue" connector-ref="zipCodesConnector"
+                                   exchange-pattern="one-way">
+            </jms:outbound-endpoint>
+        </catch-exception-strategy>
+    </flow>
+
+    <flow name="combineRestaurantDataQueueFlow" processingStrategy="synchronous">
+        <jms:inbound-endpoint queue="combineRestaurantDataQueue" connector-ref="restaurantStagingConnector"
+                              exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <json:json-to-object-transformer returnClass="com.taptech.spoonscore.domain.Restaurant"
+                                         doc:name="JSON to HashMap"/>
+        <logger message="This is a jms flow  restaurantStagingQueueFlow #[payload]" level="INFO"/>
+        <transformer ref="combineRestaurantDataTransformer"/>
+        <transformer ref="persistRestaurantTransformer"/>
+        <exception-strategy ref="restaurantUpdateExceptionStrategy"/>
+    </flow>
+
+    <!--
+    <flow name="jmsInboundFlow1">
+        <jms:inbound-endpoint queue="queue1" connector-ref="jmsConnector1" exchange-pattern="one-way">
+        </jms:inbound-endpoint>
+        <append-string-transformer message=" Received from jmsInboundFlow1  " />
+        <logger message="This is a jms flow  jmsInboundFlow1 #[payload] #[message.inboundProperties]" level="INFO"/>
+    </flow>
+    -->
+
+</mule>

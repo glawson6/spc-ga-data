@@ -1,0 +1,42 @@
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%-5p %d [%t] %c: %m%n"/>
+        </Console>
+        <File name="File" fileName="../out/SPC-GA-DATA.log">
+            <PatternLayout>
+                <PatternLayout pattern="%-5p %d [%t] %c: %m%n"/>
+            </PatternLayout>
+        </File>
+    </Appenders>
+
+    <Loggers>
+
+        <!-- CXF is used heavily by Mule for web services -->
+        <AsyncLogger name="org.apache.cxf" level="WARN"/>
+
+        <!-- Apache Commons tend to make a lot of noise which can clutter the log-->
+        <AsyncLogger name="org.apache" level="WARN"/>
+
+        <!-- Reduce startup noise -->
+        <AsyncLogger name="org.springframework.beans.factory" level="WARN"/>
+
+        <!-- Mule classes -->
+
+
+        <AsyncLogger name="org.hibernate.engine" level="NONE"/>
+        <AsyncLogger name="org.mule.module.http" level="NONE"/>
+        <AsyncLogger name="org.mule.config.factories" level="ERROR"/>
+        <AsyncLogger name="org.mule.exception" level="NONE"/>
+        <AsyncLogger name="org.mule" level="INFO"/>
+        <AsyncLogger name="com.mulesoft" level="INFO"/>
+        <AsyncLogger name="org.apache.activemq" level="INFO"/>
+        <AsyncLogger name="org.taptech.app" level="INFO"/>
+
+        <AsyncRoot level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </AsyncRoot>
+    </Loggers>
+
+</Configuration>
