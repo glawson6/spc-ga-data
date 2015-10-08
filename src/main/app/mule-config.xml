@@ -218,7 +218,7 @@
         </choice-exception-strategy>
 
     </flow>
-    <!--
+    
     <flow name="queryInspectionQueueFlow" processingStrategy="synchronous">
         <jms:inbound-endpoint queue="queryInspectionQueue" connector-ref="queryInspectionConnector"
                               exchange-pattern="one-way">
@@ -233,8 +233,8 @@
         </jms:outbound-endpoint>
         <exception-strategy ref="queryInspectionExceptionStrategy"/>
     </flow>
-    -->
 
+    <!--
     <flow name="queryInspectionQueueFlow">
         <jms:inbound-endpoint queue="queryInspectionQueue" connector-ref="restaurantStagingConnector"
                               exchange-pattern="one-way">
@@ -245,7 +245,7 @@
         </jms:outbound-endpoint>
         <exception-strategy ref="queryInspectionExceptionStrategy"/>
     </flow>
-
+-->
 
     <flow name="restaurantStagingQueueFlow" processingStrategy="synchronous">
         <jms:inbound-endpoint queue="restaurantStagingQueue" connector-ref="restaurantStagingConnector"
