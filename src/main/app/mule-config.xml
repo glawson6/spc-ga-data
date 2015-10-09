@@ -8,13 +8,15 @@
       xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
       xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
       xmlns:jetty="http://www.mulesoft.org/schema/mule/jetty"
+      xmlns:file="http://www.mulesoft.org/schema/mule/file"
       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 		http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
 		http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
-		http://www.mulesoft.org/schema/mule/jetty http://www.mulesoft.org/schema/mule/jetty/current/mule-jetty.xsd">
+		http://www.mulesoft.org/schema/mule/jetty http://www.mulesoft.org/schema/mule/jetty/current/mule-jetty.xsd
+		http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/3.6/mule-file.xsd">
 
     <spring:beans>
         <!--
@@ -28,6 +30,7 @@
 
         <spring:import resource="classpath:activemq-embedded.xml"/>
         -->
+        <!-- /Users/tap/dev/software/solr/solr-5.3.1-1/sampleRestuarants/ -->
         <spring:bean id="connectionFactoryInbound"
                      class="org.apache.activemq.ActiveMQConnectionFactory">
             <spring:property name="brokerURL" value="tcp://gregorylawson.net:58616"/>
@@ -35,7 +38,7 @@
             <spring:property name="userName" value="Integration6!"/>
         </spring:bean>
     </spring:beans>
-
+    <file:connector name="outputFileConnector" outputAppend="false" />
     <jms:activemq-connector name="zipCodesConnector"
                             connectionFactory-ref="connectionFactoryInbound"
                             specification="1.1"
@@ -67,8 +70,13 @@
                           doc:name="HTTP Listener Configuration">
     </http:listener-config>
 
+    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="0.0.0.0"
+                         port="${jetty.port}" name="httpRequestConfig">
+    </http:request-config>
+
+
     <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="127.0.0.1"
-                         port="8081" name="httpRequestConfig">
+                         port="8983" name="httpSolrConfig">
     </http:request-config>
 
     <choice-exception-strategy name="queryInspectionExceptionStrategy">
@@ -184,6 +192,25 @@
         </jms:outbound-endpoint>
     </flow>
 
+    <flow name="pushRestaurantsToSolrFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="pushRestaurants" allowedMethods="GET">
+        </http:listener>
+        <expression-component doc:name="Message to encryptor">
+            <![CDATA[payload =app.registry['restaurantService'].getAllRestaurants();]]>
+        </expression-component>
+        <collection-splitter/>
+        <set-variable variableName="fileName" value="restaurant-#[payload.restaurantID].json"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <logger category="pushRestaurantsToSolrFlow" level="INFO" message="Restaurant: #[payload]"/>
+        <file:outbound-endpoint connector-ref="outputFileConnector" path="/Users/tap/dev/software/solr/solr-5.3.1-1/sampleRestuarants"
+                outputPattern="#[flowVars['fileName']]"/>
+        <!--
+        <http:request config-ref="httpSolrConfig" doc:name="Query user resource using token" parseResponse="false"
+                      method="POST" path="solr/gettingstarted/update">
+        </http:request>
+        -->
+    </flow>
+
     <flow name="tesHttpStaticFlow">
         <jetty:inbound-endpoint exchange-pattern="request-response" ref="jettyEndpoint" contentType="text/html"
                                 doc:name="Jetty"/>
@@ -218,7 +245,7 @@
         </choice-exception-strategy>
 
     </flow>
-    
+
     <flow name="queryInspectionQueueFlow" processingStrategy="synchronous">
         <jms:inbound-endpoint queue="queryInspectionQueue" connector-ref="queryInspectionConnector"
                               exchange-pattern="one-way">

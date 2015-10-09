@@ -42,6 +42,10 @@ public class DatabaseConfiguration implements EnvironmentAware {
     public void setEnvironment(Environment env) {
         this.env = env;
         this.propertyResolver = new RelaxedPropertyResolver(env, "spring.datasource.");
+        String httpPort = env.getProperty("http.port");
+        Integer jettyPort = Integer.parseInt(httpPort) + 1;
+        log.info("Using http.port => {} jetty port => {}",httpPort,jettyPort.toString());
+        System.setProperty("jetty.port",jettyPort.toString());
     }
 
     @Bean(destroyMethod = "shutdown")

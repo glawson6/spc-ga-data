@@ -1,5 +1,6 @@
 package com.taptech.spoonscore.service;
 
+import com.taptech.spoonscore.domain.Location;
 import com.taptech.spoonscore.domain.Restaurant;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -87,6 +88,51 @@ public class YelpRestaurantCombineUpdate implements RestaurantCombineUpdate {
         }
 
     }
+
+    /*
+    @Override
+    public void combineRestaurantData(Location location) {
+
+        String searchResponseJSON = null;
+        JSONObject response = null;
+        try {
+            JSONParser parser = new JSONParser();
+            StringBuilder stringBuilder = new StringBuilder(location.getAddress().trim());
+            stringBuilder.append(SPACE).append(location.getCity()).append(",");
+            stringBuilder.append(SPACE).append(location.getState()).append(SPACE);
+            stringBuilder.append(location.getZipCode());
+            logger.info("Location created for Yelp Query {}",stringBuilder.toString());
+            searchResponseJSON = searchForBusinessesByLocation(restaurant.getCompanyName(),stringBuilder.toString());
+            response = (JSONObject) parser.parse(searchResponseJSON);
+            //System.out.println("searchResponseJSON => "+searchResponseJSON);
+        } catch (ParseException pe) {
+            logger.error("Error: could not parse JSON response:");
+            logger.error(searchResponseJSON);
+        }
+
+        JSONArray businesses = (JSONArray) response.get("businesses");
+        if (null != businesses && businesses.size() > 0) {
+            JSONObject business = (JSONObject) businesses.get(0);
+            restaurant.setFoundBy(NAME);
+            logger.debug("Yelp business found => {}", business.toJSONString());
+            JSONObject location = (JSONObject)business.get("location");
+            JSONObject coordinateObject = (JSONObject) location.get("coordinate");
+            logger.debug("coordinateObject => {}",location.get("coordinate").toString());
+            Double latitude = Double.parseDouble(coordinateObject.get("latitude").toString());
+            Double longitude = Double.parseDouble(coordinateObject.get("longitude").toString());
+            restaurant.setAlternateCompanyName(business.get(RESPONSE_NAME_KEY).toString());
+            restaurant.getLocation().setLatitude(latitude);
+            restaurant.getLocation().setLongitude(longitude);
+            restaurant.setCompanyPhone(getJSONValue("display_phone",business));
+            restaurant.setRatingCommentsLink(getJSONValue("url",business));
+            Float rating = Float.parseFloat(getJSONValue("rating", business));
+            restaurant.setRating(rating);
+            restaurant.setImageURL(getJSONValue("image_url", business));
+            restaurant.setLastUpdated(new Date());
+        }
+
+    }
+    */
 
     private String getJSONValue(String key, JSONObject jsonObject){
         String value = null;

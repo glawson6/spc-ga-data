@@ -12,6 +12,6 @@ public interface RestaurantService {
 
     Collection<Restaurant> findRestaurants(RestaurantSearch restaurantSearch);
     Restaurant updateRestaurant(Restaurant restaurant, boolean update);
-
     Restaurant updateRestaurant(Restaurant restaurant);
+    Collection<Restaurant> getAllRestaurants();
 }

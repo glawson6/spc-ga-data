@@ -8,6 +8,8 @@ import com.taptech.spoonscore.entity.RestaurantLocation;
 import com.taptech.spoonscore.entity.ZipCodes;
 import com.taptech.spoonscore.locator.LocationService;
 import com.taptech.spoonscore.locator.RestaurantLocator;
+import com.taptech.spoonscore.repository.RestaurantDetailsRepository;
+import com.taptech.spoonscore.repository.RestaurantLocationRepository;
 import com.taptech.spoonscore.repository.ZipCodesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,14 @@ public class DefaultRestaurantService  extends AbstractService implements Restau
 
     @Inject
     private ZipCodesRepository zipCodesRepository;
+
+    @Inject
+    private RestaurantDetailsRepository restaurantDetailsRepository;
+
+    @Inject
+    private RestaurantLocationRepository restaurantLocationRepository;
+
+    private static final String HOLDER_IMAGE_URL = "images/no-image-available.png";
 
     @Override
     public Collection<Restaurant> findRestaurants(RestaurantSearch restaurantSearch) {
@@ -88,7 +98,10 @@ public class DefaultRestaurantService  extends AbstractService implements Restau
                     setReportLink(dbRestaurant);
                     updatedLinks = true;
                 }
-
+                if (null == dbRestaurant.getImageURL()){
+                    dbRestaurant.setImageURL(HOLDER_IMAGE_URL);
+                    updatedLinks = true;
+                }
                 if (updatedLinks) {
                     saveRestaurantInDatabase(dbRestaurant, dbRestaurant.getStatus());
                 }
@@ -252,5 +265,16 @@ public class DefaultRestaurantService  extends AbstractService implements Restau
         setReportLink(restaurant);
         // TODO . Maybe some more work needs to be done!
         return restaurant;
+    }
+
+    @Override
+    public Collection<Restaurant> getAllRestaurants() {
+        Collection<Restaurant> restaurants = new ArrayList<Restaurant>();
+         List<RestaurantDetails> allRestaurantDetailsList = restaurantDetailsRepository.findAll();
+        //List<RestaurantLocation> allRestaurantLocations = restaurantLocationRepository.findAll();
+        for (RestaurantDetails restaurantDetail:allRestaurantDetailsList){
+            restaurants.add(mergeYelpRestaurantIntoDbRestaurant(new Restaurant(),restaurantDetail, restaurantLocationRepository.findOneByRestaurantId(restaurantDetail.getRestaurantId())));
+        }
+        return restaurants;
     }
 }

@@ -88,7 +88,7 @@
                   <a href="{{restaurant.viewReportLink}}"  target="_blank">Link To Report</a>
                 </div>
                 <!--a data-toggle="modal" data-target="#inspectionModal" ng-click="getInspectionReport(restaurant)" ng-show="!!!restaurant.inspectionLink">Get Inspection Report</a-->
-                <a  ng-click="getInspectionReport(restaurant)" ng-show="!!!restaurant.inspectionLink">Get Inspection Report</a>
+                <a  ng-click="getInspectionReport(restaurant)" ng-show="(!!!restaurant.inspectionLink && (restaurant.inspectionReportTries < 3))">Get Inspection Report</a>
                 <address class="address">{{restaurant.companyAddress}}</address>
                 <div>{{restaurant.companyPhone}}</div>
               </div>
