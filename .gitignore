@@ -15,7 +15,7 @@ src/main/webapp/dist
 .gradle
 build
  /Users/tap/dev/software/solr/solr-5.3.1-1/sampleRestuarants/
- 
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
