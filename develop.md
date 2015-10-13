@@ -2,3 +2,5 @@ mvn clean install -DskipTests && java -Xms1G -Xmx4G -Dhttp.port=8080 -Dspring.pr
 
 DATABASE_URL=postgres://postgres:2a2d922d81b097c21de11ed2d364d1ae@gregorylawson.net:6732/spoonscore
 
+
+
