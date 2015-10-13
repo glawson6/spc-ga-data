@@ -1,6 +1,7 @@
 package com.taptech.spoonscore.mule.transformers;
 
 import com.taptech.spoonscore.domain.Restaurant;
+import com.taptech.spoonscore.locator.LocationService;
 import com.taptech.spoonscore.service.InspectionDataService;
 import com.taptech.spoonscore.service.RestaurantCombineUpdate;
 import org.mule.api.MuleMessage;

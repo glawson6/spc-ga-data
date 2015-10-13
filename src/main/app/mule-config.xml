@@ -310,6 +310,7 @@
                                          doc:name="JSON to HashMap"/>
         <logger message="This is a jms flow  restaurantStagingQueueFlow #[payload]" level="INFO"/>
         <transformer ref="combineRestaurantDataTransformer"/>
+        <transformer ref="geolocateRestaurantTransformer"/>
         <transformer ref="persistRestaurantTransformer"/>
         <exception-strategy ref="restaurantUpdateExceptionStrategy"/>
     </flow>
