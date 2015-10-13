@@ -70,7 +70,7 @@
                           doc:name="HTTP Listener Configuration">
     </http:listener-config>
 
-    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="0.0.0.0"
+    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="127.0.0.1"
                          port="${jetty.port}" name="httpRequestConfig">
     </http:request-config>
 
