@@ -66,7 +66,7 @@
                             maxRedelivery="4"
                             numberOfConsumers="1"/>
 
-    <http:listener-config name="httpConfig" host="${mule.host}" port="${http.port}" protocol="HTTP"
+    <http:listener-config name="httpConfig" host="0.0.0.0" port="${http.port}" protocol="HTTP"
                           doc:name="HTTP Listener Configuration">
     </http:listener-config>
 
