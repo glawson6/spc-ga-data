@@ -1,18 +1,14 @@
 package com.taptech.spoonscore.mule.transformers;
 
-import com.taptech.spoonscore.domain.Restaurant;
-import com.taptech.spoonscore.service.InspectionDataService;
 import org.mule.api.MuleMessage;
 import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractMessageTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 /**
  * Created by tap on 10/3/15.

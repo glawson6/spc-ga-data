@@ -1,6 +1,5 @@
 package com.taptech.spoonscore.service;
 
-import com.taptech.spoonscore.domain.Location;
 import com.taptech.spoonscore.domain.Restaurant;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,11 +12,11 @@ import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
-import java.util.*;
+import java.util.Date;
 
 /**
  * Created by tap on 3/29/15.
@@ -30,7 +29,7 @@ public class YelpRestaurantCombineUpdate implements RestaurantCombineUpdate {
     private static final String NAME = "YELP";
     private static final String RESPONSE_NAME_KEY = "name";
 
-    @Inject
+    @Autowired
     private Environment env;
 
     private static String API_HOST = "api.yelp.com";
@@ -40,9 +39,9 @@ public class YelpRestaurantCombineUpdate implements RestaurantCombineUpdate {
     private static final String BUSINESS_PATH = "/v2/business";
     private static final String SPACE = " ";
 
-    @Inject
+    @Autowired
     OAuthService service;
-    @Inject
+    @Autowired
     Token accessToken;
 
 

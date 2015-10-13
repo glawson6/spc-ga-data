@@ -10,10 +10,9 @@ import org.scribe.model.Response;
 import org.scribe.model.Verb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-
-import javax.inject.Inject;
 
 /**
  * Created by tap on 4/1/15.
@@ -22,7 +21,7 @@ import javax.inject.Inject;
 public class GoogleLocationService implements LocationService{
     private final Logger log = LoggerFactory.getLogger(GoogleLocationService.class);
 
-    @Inject
+    @Autowired
     Environment env;
 
     private static final String GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json";

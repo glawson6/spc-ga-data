@@ -14,10 +14,10 @@ import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.*;
 
 /**
@@ -29,7 +29,7 @@ public class YelpRestaurantLocator extends AbstractRestaurantLocator {
     private final Logger log = LoggerFactory.getLogger(YelpRestaurantLocator.class);
 
     private static final String NAME = "YELP";
-    @Inject
+    @Autowired
     private Environment env;
 
     //private static final String API_HOST = "api.yelp.com";
@@ -47,9 +47,9 @@ public class YelpRestaurantLocator extends AbstractRestaurantLocator {
     private static final String BUSINESS_PATH = "/v2/business";
     Map<String,Object> config = new HashMap<String, Object>();
 
-    @Inject
+    @Autowired
     OAuthService service;
-    @Inject
+    @Autowired
     Token accessToken;
 
 

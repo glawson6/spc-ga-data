@@ -1,6 +1,5 @@
 package com.taptech.spoonscore.repository;
 
-import com.taptech.spoonscore.entity.RestaurantDetailsStage;
 import com.taptech.spoonscore.entity.RestaurantLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 

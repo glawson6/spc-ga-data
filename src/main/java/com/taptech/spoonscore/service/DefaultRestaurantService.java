@@ -14,16 +14,19 @@ import com.taptech.spoonscore.repository.ZipCodesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by tap on 10/6/15.
@@ -35,24 +38,24 @@ public class DefaultRestaurantService  extends AbstractService implements Restau
 
     private final Logger logger = LoggerFactory.getLogger(DefaultRestaurantService.class);
 
-    @Inject
+    @Autowired
     @Qualifier(value = "YelpRestaurantLocator")
     RestaurantLocator yelpRestaurantLocator;
 
-    @Inject
+    @Autowired
     @Qualifier(value = "GoogleLocationService")
     LocationService locationService;
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Inject
+    @Autowired
     private ZipCodesRepository zipCodesRepository;
 
-    @Inject
+    @Autowired
     private RestaurantDetailsRepository restaurantDetailsRepository;
 
-    @Inject
+    @Autowired
     private RestaurantLocationRepository restaurantLocationRepository;
 
     private static final String HOLDER_IMAGE_URL = "images/no-image-available.png";
