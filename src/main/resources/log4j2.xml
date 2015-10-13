@@ -30,10 +30,10 @@
         <AsyncLogger name="org.mule.module.http" level="NONE"/>
         <AsyncLogger name="org.mule.config.factories" level="ERROR"/>
         <AsyncLogger name="org.mule.exception" level="NONE"/>
-        <AsyncLogger name="org.mule" level="DEBUG"/>
-        <AsyncLogger name="com.mulesoft" level="DEBUG"/>
+        <AsyncLogger name="org.mule" level="INFO"/>
+        <AsyncLogger name="com.mulesoft" level="INFO"/>
         <AsyncLogger name="org.apache.activemq" level="INFO"/>
-        <AsyncLogger name="org.taptech.app" level="DEBUG"/>
+        <AsyncLogger name="org.taptech.app" level="INFO"/>
 
         <AsyncRoot level="INFO">
             <AppenderRef ref="Console"/>
