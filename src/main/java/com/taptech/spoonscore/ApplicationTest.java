@@ -35,7 +35,7 @@ public class ApplicationTest {
     @Autowired
     private Environment env;
 
-    
+
     /**
      * Initializes spoonscore.
      * <p/>
