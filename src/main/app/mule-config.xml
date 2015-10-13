@@ -70,7 +70,7 @@
                           doc:name="HTTP Listener Configuration">
     </http:listener-config>
 
-    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="${mule.host}"
+    <http:request-config doc:name="HTTP Request Configuration" protocol="HTTP" host="0.0.0.0"
                          port="${jetty.port}" name="httpRequestConfig">
     </http:request-config>
 
