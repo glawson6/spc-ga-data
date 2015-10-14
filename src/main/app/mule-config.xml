@@ -179,6 +179,21 @@
         </jms:outbound-endpoint>
     </flow>
 
+    <flow name="zipCodeInfoFlow">
+        <http:listener config-ref="httpConfig" doc:name="User data" path="zipCodeInfo/{zipCode}" allowedMethods="GET">
+        </http:listener>
+        <set-variable variableName="zipCode" value="#[message.inboundProperties.'http.uri.params'.zipCode]"
+                      doc:name="Variable"/>
+        <logger category="zipCodeUpdateFlow" level="INFO" message="Sending ZipCode #[flowVars['zipCode']]"/>
+        <set-payload value="#[new Integer(flowVars['zipCode'])]"/>
+        <component doc:name="Java">
+            <method-entry-point-resolver>
+                <include-entry-point method="findOneByZipCode"/>
+            </method-entry-point-resolver>
+            <spring-object bean="zipCodesRepository"/>
+        </component>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
     <flow name="zipCodeUpdateAllFlow">
         <http:listener config-ref="httpConfig" doc:name="User data" path="zipCodeUpdateAll" allowedMethods="GET">
         </http:listener>
