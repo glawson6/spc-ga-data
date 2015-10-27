@@ -4,10 +4,6 @@
        xmlns:amq="http://activemq.apache.org/schema/core"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
-
-
-
-
                            http://activemq.apache.org/schema/core
                            http://activemq.apache.org/schema/core/activemq-core.xsd">
 
@@ -22,7 +18,7 @@
         </amq:destinations>
         <amq:transportConnectors>
             <!--amq:transportConnector name="openwire" uri="http://0.0.0.0:${http.port}?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/-->
-            <amq:transportConnector name="openwire" uri="http://0.0.0.0:${http.port}"/>
+            <amq:transportConnector name="openwire" uri="http://0.0.0.0:61617"/>
         </amq:transportConnectors>
     </amq:broker>
 
@@ -38,7 +34,7 @@
 
     <bean id="connectionFactoryTCP"
           class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="http://0.0.0.0:${http.port}"/>
+        <property name="brokerURL" value="http://0.0.0.0:61617"/>
     </bean>
 
 </beans>

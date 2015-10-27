@@ -18,7 +18,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mule.version>3.7.0</mule.version>
         <mule.tools.version>1.0</mule.tools.version>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>1.7</jdk.version>
         <junit.version>4.9</junit.version>
         <spring.boot.version>1.2.6.RELEASE</spring.boot.version>
         <start-class>com.taptech.spoonscore.MuleBootstrap</start-class>
@@ -409,6 +409,64 @@
             <version>4.9</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>5.11.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-web</artifactId>
+            <version>5.11.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-web-console</artifactId>
+            <version>5.11.1</version>
+            <type>war</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jsp-api-2.1-glassfish</artifactId>
+            <version>2.1.v20100127</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jsp-2.1-glassfish</artifactId>
+            <version>2.1.v20100127</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jsp-2.1</artifactId>
+            <version>7.5.4.v20111024</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jsp</artifactId>
+            <version>9.2.12.v20150709</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <!--
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>apache-jsp</artifactId>
+            <version>9.3.1.v20150714</version>
+        </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>jasper</artifactId>
+                    <version>6.0.44</version>
+                </dependency>
+        -->
     </dependencies>
 
     <repositories>
